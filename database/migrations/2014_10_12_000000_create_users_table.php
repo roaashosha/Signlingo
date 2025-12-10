@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('gender',['male','female'])->nullable();
             $table->enum('lang',['ar','en']);
             $table->string('email')->unique();
-            $table->string('phone')->unique();
+            $table->string('phone')->unique()->nullable();
             $table->enum('type',['admin','user']);
             $table->string('img',200)->nullable();
             $table->enum('mode',['l','a']);
