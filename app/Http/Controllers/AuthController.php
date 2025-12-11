@@ -99,5 +99,34 @@ class AuthController extends Controller
 
     }
 
+
+    public function login(Request $request){
+        $validator = Validator::make($request->all(),[
+            "email"=>"required|email",
+            "password"=>"required|string|min:6"
+        ]);
+        if ($validator->fails()){
+            return response()->json($validator->errors(),400);
+        }
+
+        if (! $token = auth()->attempt($validator->validated())){
+            return response()->json(['errors'=>"unautherized"],401);
+        }
+        return $this->createNewToken($token);
+    }
+
+    public function logout(){
+        auth()->logout();
+        return response()->json(["message"=>"user successfuly signed out"]);
+    }
+
+
+    public function rememberMe(){
+
+    }
+
+
+    
+
     
 }
