@@ -35,7 +35,7 @@ class AuthController extends Controller
         //validate the iput
         $validator = Validator::make($request->all(), [
         "name" => "required|string|max:255",
-        "email" => "required|email|string|unique:users",
+        "email" => "required|email|string",
         "password" => "required|string|min:8|confirmed"
         ]);
 
@@ -47,14 +47,23 @@ class AuthController extends Controller
             ], 422);
         }
 
-        //create a user
-        $user=User::create([
-            "first_name"=>$request->name,
-            "email"=>$request->email,
-            "password"=>Hash::make($request->password)
-        ]);
+        $user = User::where('email',$request->email)->first();
+        if ($user->is_verified){
+            return response()->json([
+                'message' => 'Email already registered'
+            ], 422);
+        }
+        else{
+            //create a user
+            $user=User::create([
+                "first_name"=>$request->name,
+                "email"=>$request->email,
+                "password"=>Hash::make($request->password)
+            ]);
+        }
 
         //otp creation
+        OtpCode::where('user_id', $user->id)->delete();
         $otpCode = $this->generateOtp();
         OtpCode::create([
             "code"=>$otpCode,
@@ -75,7 +84,7 @@ class AuthController extends Controller
     public function verifyOtp(Request $request){
         $validator = Validator::make($request->all(), [
         'user_id' => 'required|exists:users,id',
-        'otp' => 'required|digits:6'
+        'otp' => 'required|digits:4'
         ]);
 
         if($validator->fails()){

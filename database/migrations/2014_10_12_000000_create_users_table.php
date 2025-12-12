@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('last_name');
             $table->enum('gender',['male','female'])->nullable();
             $table->enum('lang',['ar','en']);
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('phone')->unique()->nullable();
             $table->enum('type',['admin','user']);
             $table->string('img',200)->nullable();
@@ -27,6 +27,7 @@ return new class extends Migration
             $table->integer('age')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->boolean('is_verified')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });
