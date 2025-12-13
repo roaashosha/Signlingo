@@ -1,0 +1,11 @@
+{
+    //sign in
+    "register.title":"Get Started",
+    "name":"Name",
+    "email":"Email",
+    "password":"Password",
+    "password.confirmation":"Password Confirmation",
+    "agreement":"I agree to the processing of personal data",
+    "register.btn":"Sign Up"
+
+}

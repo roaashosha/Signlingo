@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\OtpCode;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -20,9 +21,13 @@ class AuthController extends Controller
     public function generateToken($token){
         return response()->json([
         'access_token' => $token,
-        'token_type' => 'bearer',
-        'expires_in' => auth('api')->factory()->getTTL() * 60,
-        'user' => auth()->setToken($token)->user(),
+        'token_type'   => 'bearer',
+        'expires_in'   => auth('api')->factory()->getTTL() * 60,
+        'user' => [
+            'id' => auth()->user()->id,
+            'name' => auth()->user()->first_name,
+            'email' => auth()->user()->email,
+        ]
         ]);
     }
 
@@ -46,15 +51,16 @@ class AuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
+        //check if user registered before
         $user = User::where('email',$request->email)->first();
-        if ($user->is_verified){
+        //if he registered check if hes verified
+        if ($user && $user->is_verified){
             return response()->json([
                 'message' => 'Email already registered'
             ], 422);
         }
-        else{
-            //create a user
+        //if not create a new user
+        else if (!$user){
             $user=User::create([
                 "first_name"=>$request->name,
                 "email"=>$request->email,
@@ -82,6 +88,7 @@ class AuthController extends Controller
 
     //if the user is confirmed with otpcode then jwt it
     public function verifyOtp(Request $request){
+        //validate input
         $validator = Validator::make($request->all(), [
         'user_id' => 'required|exists:users,id',
         'otp' => 'required|digits:4'
@@ -91,6 +98,7 @@ class AuthController extends Controller
             return response()->json(['errors'=>$validator->errors()], 422);
         }
 
+        //check if the otp is assosiated with this user and if its valid or expired
         $otp = OtpCode::where('user_id',$request->user_id)
         ->where('code',$request->otp)
         ->where('expires_at',">=",Carbon::now())
@@ -100,10 +108,15 @@ class AuthController extends Controller
             return $this->ApiResponse(null,"Invalid or expired OTP",400);
         }
 
+        //delete the otp if correct
         $otp->delete();
+        //verify the user
         $user = User::find($request->user_id);
+        $user->is_verified = 1;
+        $user->email_verified_at = Carbon::now();
+        $user->save();
         $token = JWTAuth::fromUser($user);
-        return $this->generateToken($token);
+        return $this->ApiResponse(["token"=>$token,"user"=> new UserResource($user)],"User verified successfully!",200);
 
 
     }
@@ -118,15 +131,19 @@ class AuthController extends Controller
             return response()->json($validator->errors(),400);
         }
 
-        if (! $token = auth()->attempt($validator->validated())){
-            return response()->json(['errors'=>"unautherized"],401);
+        if (! $token = auth('api')->attempt($validator->validated())) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
-        return $this->createNewToken($token);
+
+        // return $this->generateToken($token);
+        $user = auth('api')->user();
+        return $this->ApiResponse(["token"=>$token,"user"=> new UserResource($user)],"User logged in successfully!",200);
+
     }
 
     public function logout(){
-        auth()->logout();
-        return response()->json(["message"=>"user successfuly signed out"]);
+        auth('api')->logout();
+        return $this->ApiResponse(null,"User logout successfully!",200);
     }
 
 

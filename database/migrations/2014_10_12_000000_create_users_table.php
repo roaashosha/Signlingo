@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('lang',['ar','en']);
             $table->string('email');
             $table->string('phone')->unique()->nullable();
-            $table->enum('type',['admin','user']);
+            $table->enum('type',['admin','user'])->default('user');
             $table->string('img',200)->nullable();
             $table->enum('mode',['l','a']);
             $table->string('address')->nullable();
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->integer('age')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->boolean('is_verified')->default(false);
+            $table->boolean('is_verified')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });

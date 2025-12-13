@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-Route::get('/register',[AuthController::class,'register']);
-Route::get('/verify-otp',[AuthController::class,'verifyOtp']);
+Route::post('/register',[AuthController::class,'register']);
+Route::post('/login',[AuthController::class,'login']);
+Route::post('/logout',[AuthController::class,'logout']);
+Route::post('/verify-otp',[AuthController::class,'verifyOtp']);
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
