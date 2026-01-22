@@ -18,6 +18,9 @@ Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
 Route::post('/logout',[AuthController::class,'logout']);
 Route::post('/verify-otp',[AuthController::class,'verifyOtp']);
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['middleware' => ['auth.api','isUserLogged', 'setLang']], function () {
+    
 });
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });

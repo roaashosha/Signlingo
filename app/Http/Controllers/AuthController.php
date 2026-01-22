@@ -41,8 +41,12 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
         "name" => "required|string|max:255",
         "email" => "required|email|string",
-        "password" => "required|string|min:8|confirmed"
+        "password" => "required|string|min:8|confirmed",
+        "agreement"=>"required|accepted"
+        ],[
+            "agreement.accepted"=>"You must agree to processing of personal data!"
         ]);
+
 
         //tell if there is wrong validation
         if($validator->fails()){
@@ -64,7 +68,8 @@ class AuthController extends Controller
             $user=User::create([
                 "first_name"=>$request->name,
                 "email"=>$request->email,
-                "password"=>Hash::make($request->password)
+                "password"=>Hash::make($request->password),
+                "agreement"=>1
             ]);
         }
 
@@ -125,19 +130,29 @@ class AuthController extends Controller
     public function login(Request $request){
         $validator = Validator::make($request->all(),[
             "email"=>"required|email",
-            "password"=>"required|string|min:6"
+            "password"=>"required|string|min:6",
+            "remember_me"=>"boolean"
         ]);
+
         if ($validator->fails()){
             return response()->json($validator->errors(),400);
         }
 
-        if (! $token = auth('api')->attempt($validator->validated())) {
+        //set remember me for a month
+        if ($request->remember_me) {
+            JWTAuth::factory()->setTTL(60 * 24 * 30); // 30 days
+        //set token for 2 hours
+        } else {
+            JWTAuth::factory()->setTTL(60 * 2); // 2 hours
+        }
+
+        if (! $token = auth('api')->attempt($request->only('email','password'))) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         // return $this->generateToken($token);
         $user = auth('api')->user();
-        return $this->ApiResponse(["token"=>$token,"user"=> new UserResource($user)],"User logged in successfully!",200);
+        return $this->ApiResponse(["token"=>$token,'expires_in' => JWTAuth::factory()->getTTL() * 60,"user"=> new UserResource($user)],"User logged in successfully!",200);
 
     }
 
@@ -147,10 +162,7 @@ class AuthController extends Controller
     }
 
 
-    public function rememberMe(){
-
-    }
-
+    
 
     
 
