@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,8 +19,19 @@ Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
 Route::post('/logout',[AuthController::class,'logout']);
 Route::post('/verify-otp',[AuthController::class,'verifyOtp']);
-Route::group(['middleware' => ['auth.api','isUserLogged', 'setLang']], function () {
-    
+
+Route::middleware(['auth:api','setLang'])->group(function () {
+    Route::post('/user/select-mode', [UserController::class,'selectMode']);
+    Route::get('user/main-data',[UserController::class,'userMainData']);
+    Route::get('user/all-data',[UserController::class,'userAllData']);
+    Route::patch('user/update-data',[UserController::class,'editUser']);
+    Route::post('/user/change-lang', [UserController::class,'changeLang']);
+    Route::delete('/user/delete-account',[UserController::class,'deleteUser']);
+    Route::get('user/get-name',[UserController::class,'getUserName']);
+
+});
+Route::group(['middleware' => ['auth.api','isUserLogged', 'setLang','userMode:l']], function () {
+
 });
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();
