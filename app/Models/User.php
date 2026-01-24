@@ -52,4 +52,12 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function lessons()
+    {
+        return $this->belongsToMany(Lesson::class, 'progress')
+                    ->withPivot('completed', 'completed_at')
+                    ->withTimestamps();
+    }
+
 }

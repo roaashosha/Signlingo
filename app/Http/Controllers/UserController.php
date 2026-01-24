@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\App;
+use App\Models\Category;
 
 
 class UserController extends Controller
@@ -29,6 +30,7 @@ class UserController extends Controller
         
     }
 
+    //return the username and email only 
     public function userMainData(){
         //check logged user
         $user = auth()->user();
@@ -40,6 +42,7 @@ class UserController extends Controller
 
     }
 
+    //return all user profile data
     public function userAllData(){
         //check logged user
         $user=auth()->user();
@@ -50,6 +53,7 @@ class UserController extends Controller
         return $this->ApiResponse(["username"=>$user->first_name,"name"=>$user->last_name,"userEmail"=>$user->email,"currentPassword"=>null,"newPassword"=>null,"confirmPassword"=>null],"User data returned Succesfully!",200);
     }
 
+    //update user data
     public function editUser(Request $request){
         //check logged user
         $user=auth()->user();
@@ -102,6 +106,7 @@ class UserController extends Controller
 
     }
 
+    //change the account language
     public function changeLang(Request $request){
         //check if user logged
         $user = auth()->user();
@@ -120,6 +125,7 @@ class UserController extends Controller
         return $this->ApiResponse(["langauge"=>$user->lang],"lang updated Successfully!",200);
     }
 
+    //delete user account
     public function deleteUser(){
         //check if the user logged
         $user = auth()->user();
@@ -131,6 +137,7 @@ class UserController extends Controller
         return $this->ApiResponse(null, "Account deleted successfully!", 200);
     }
 
+    //return the name of the user
     public function getUserName(){
         //check the logged user
         $user = auth()->user();
@@ -140,4 +147,8 @@ class UserController extends Controller
         //return the name
         return $this->ApiResponse($user->last_name,"User's name returned successfully!",200);
     }
+    
+    
+
+
 }
