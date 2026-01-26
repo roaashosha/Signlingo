@@ -64,78 +64,110 @@ class QuizController extends Controller
     }
 
     public function submitAnswer(Request $request, $quizId)
-{
-    $user = auth()->user();
-    $answers = $request->input('answers');
-    $userQuizId = $request->input('user_quiz_id');
+    {
+        $user = auth()->user();
+        $answers = $request->input('answers');
+        $userQuizId = $request->input('user_quiz_id');
 
-    // Check if answers array exists
-    if (!$answers || count($answers) === 0) {
-        return $this->ApiResponse(null, "All answers should be filled!", 400);
-    }
-
-    // Get quiz with questions
-    $quiz = Quiz::with('questions')->find($quizId);
-    if (!$quiz) {
-        return $this->ApiResponse(null, "Quiz not found!", 404);
-    }
-
-    // Get user's quiz attempt
-    $userQuiz = QuizUser::find($userQuizId);
-    if (!$userQuiz) {
-        return $this->ApiResponse(null, "This attempt not found!", 404);
-    }
-
-    // Check if quiz already submitted
-    if ($userQuiz->status) {
-        return $this->ApiResponse(null, "This attempt is already done!", 400);
-    }
-
-    // Calculate time taken in seconds
-    $timeTakenSeconds = now()->diffInSeconds($userQuiz->created_at);
-    $quizDurationSeconds = $quiz->duration_mins * 60; // convert minutes to seconds
-    $isTimeUp = $timeTakenSeconds >= $quizDurationSeconds;
-
-    // Calculate score
-    $score = 0;
-    foreach ($quiz->questions as $question) {
-        // Before time is up, all answers must be filled
-        if (!$isTimeUp && (!isset($answers[$question->id]) || empty($answers[$question->id]))) {
-            return $this->ApiResponse(null, "All questions must be answered!", 400);
+        // Check if answers array exists
+        if (!$answers || count($answers) === 0) {
+            return $this->ApiResponse(null, "All answers should be filled!", 400);
         }
 
-        // Count correct answers if provided
-        if (isset($answers[$question->id]) && $answers[$question->id] == $question->answer) {
-            $score++;
+        // Get quiz with questions
+        $quiz = Quiz::with('questions')->find($quizId);
+        if (!$quiz) {
+            return $this->ApiResponse(null, "Quiz not found!", 404);
         }
+
+        // Get user's quiz attempt
+        $userQuiz = QuizUser::find($userQuizId);
+        if (!$userQuiz) {
+            return $this->ApiResponse(null, "This attempt not found!", 404);
+        }
+
+        // Check if quiz already submitted
+        if ($userQuiz->status) {
+            return $this->ApiResponse(null, "This attempt is already done!", 400);
+        }
+
+        // Calculate time taken in seconds
+        $timeTakenSeconds = now()->diffInSeconds($userQuiz->created_at);
+        $quizDurationSeconds = $quiz->duration_mins * 60; // convert minutes to seconds
+        $isTimeUp = $timeTakenSeconds >= $quizDurationSeconds;
+
+        // Calculate score
+        $score = 0;
+        foreach ($quiz->questions as $question) {
+            // Before time is up, all answers must be filled
+            if (!$isTimeUp && (!isset($answers[$question->id]) || empty($answers[$question->id]))) {
+                return $this->ApiResponse(null, "All questions must be answered!", 400);
+            }
+
+            // Count correct answers if provided
+            if (isset($answers[$question->id]) && $answers[$question->id] == $question->answer) {
+                $score++;
+            }
+        }
+
+        // Calculate percentage and feedback
+        $totalQuestions = $quiz->questions->count();
+        $percentage = $totalQuestions > 0 ? ($score / $totalQuestions) * 100 : 0;
+        $feedback = $this->getFeedback($percentage);
+
+        // Convert time taken to minutes with 2 decimals
+        $timeTakenMins = round($timeTakenSeconds / 60, 2);
+
+        // Update user's quiz attempt
+        $userQuiz->update([
+            "status" => true,
+            "score" => $score,
+            "time_mins" => $timeTakenMins
+        ]);
+
+        // Return response
+        return $this->ApiResponse([
+            'score' => $score,
+            'total_questions' => $totalQuestions,
+            'percentage' => $percentage,
+            'feedback' => $feedback,
+            'time_mins' => $timeTakenMins,
+            'time_up' => $isTimeUp
+        ], "The quiz is submitted successfully!", 200);
     }
 
-    // Calculate percentage and feedback
-    $totalQuestions = $quiz->questions->count();
-    $percentage = $totalQuestions > 0 ? ($score / $totalQuestions) * 100 : 0;
-    $feedback = $this->getFeedback($percentage);
+    public function reviewAnswers($quizId)
+    {
+        $questions = QuizQuestion::where('quiz_id', $quizId)->get();
 
-    // Convert time taken to minutes with 2 decimals
-    $timeTakenMins = round($timeTakenSeconds / 60, 2);
+        if ($questions->isEmpty()) {
+            return $this->ApiResponse(null, "Quiz not found", 404);
+        }
 
-    // Update user's quiz attempt
-    $userQuiz->update([
-        "status" => true,
-        "score" => $score,
-        "time_mins" => $timeTakenMins
-    ]);
+        $data = $questions->map(function ($q) {
+            $options = [
+                1 => $q->option_1,
+                2 => $q->option_2,
+                3 => $q->option_3,
+                4 => $q->option_4,
+            ];
 
-    // Return response
-    return $this->ApiResponse([
-        'score' => $score,
-        'total_questions' => $totalQuestions,
-        'percentage' => $percentage,
-        'feedback' => $feedback,
-        'time_mins' => $timeTakenMins,
-        'time_up' => $isTimeUp
-    ], "The quiz is submitted successfully!", 200);
-}
+            return [
+                "question_id" => $q->id,
+                "title" => $q->title,
+                "media" => $q->media,
+                "options" => $options,
+                "correct_option" => $q->answer,
+                "correct_text" => $options[$q->answer],
+            ];
+        });
 
+        return $this->ApiResponse(
+            $data,
+            "Questions and answers returned successfully!",
+            200
+        );
+    }
 
 
 

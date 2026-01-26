@@ -44,6 +44,7 @@ Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:l'
     Route::get('quizes/{id}',[QuizController::class,'quizQuestions']);
     Route::post('/quizes/{quiz}/start', [QuizController::class, 'startQuiz']);
     Route::post('/quizes/{quiz}/submit', [QuizController::class, 'submitAnswer']);
+    Route::get('/quizes/{quiz}/review', [QuizController::class, 'ReviewAnswers']);
 });
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();
