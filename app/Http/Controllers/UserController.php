@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\App;
 use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
 
 
 class UserController extends Controller
@@ -54,57 +55,86 @@ class UserController extends Controller
     }
 
     //update user data
-    public function editUser(Request $request){
-        //check logged user
-        $user=auth()->user();
-        if (!$user){
-            return $this->ApiResponse(null,"Unauthenticated user!",401);
-        }
-
-        //validate the inputs
-        $request->validate([
-            "username" => "required|string|max:255|unique:users,first_name,".$user->id,
-            "name" => "required|string|max:255",
-            "email" => "required|email|string|unique:users,email,".$user->id,
-        ]);
-
-        //check if the any password field is filled
-        $passwordsFields = ["current_password","new_password","confirm_password"];
-        $anyPasswordFilled = false;
-        foreach($passwordsFields as $field){
-            if ($request->filled($field)){
-                $anyPasswordFilled=true;
-                break;
-            }
-        }
-        
-        //if any password field is filled , validate all the fields
-        if ($anyPasswordFilled){
-            $request->validate([
-                'current_password' => 'required|string',
-                'new_password'     => 'required|string|min:8|different:current_password',
-                'confirm_password' => 'required|string|same:new_password'
-            ]);
-
-            //check if the hashed current password is the same in the database
-            if (!Hash::check($request->current_password,$user->password)){
-                return $this->ApiResponse(null, "Current password is incorrect!", 400);
-            }
-
-            //hash the new password
-            $user->password = bcrypt($request->new_password);
-        }
-
-        //store the new data
-        $user->first_name = $request->username;
-        $user->last_name = $request->name;
-        $user->email = $request->email;
-        $user->save();
-
-        return $this->ApiResponse(["username"=>$user->first_name,"name"=>$user->last_name,"userEmail"=>$user->email],"User data returned Succesfully!",200);
-
-
+    public function editUser(Request $request)
+{
+    //Check logged user
+    $user = auth()->user();
+    if (!$user) {
+        return $this->ApiResponse(null, "Unauthenticated user!", 401);
     }
+
+    //Validate inputs
+    $request->validate([
+        "username"     => "required|string|max:255|unique:users,first_name," . $user->id,
+        "name"         => "required|string|max:255",
+        "email"        => "required|email|string|unique:users,email," . $user->id,
+        "img"          => "nullable|image|mimes:jpg,jpeg,png|max:2048",
+        "remove_image" => "nullable|boolean"
+    ]);
+
+    //password fields
+    $passwordFields = ["current_password", "new_password", "confirm_password"];
+    $anyPasswordFilled = false;
+
+    //check if any field is true
+    foreach ($passwordFields as $field) {
+        if ($request->filled($field)) {
+            $anyPasswordFilled = true;
+            break;
+        }
+    }
+
+    //if any field is true, the others should be
+    if ($anyPasswordFilled) {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password'     => 'required|string|min:8|different:current_password',
+            'confirm_password' => 'required|string|same:new_password'
+        ]);
+        //check if the hashed current password is the same stored
+        if (!Hash::check($request->current_password, $user->password)) {
+            return $this->ApiResponse(null, "Current password is incorrect!", 400);
+        }
+        //hash new password
+        $user->password = bcrypt($request->new_password);
+    }
+
+    //Handle image upload / removal
+    if ($request->hasFile('img')) {
+        // delete old image if exists
+        if ($user->img && Storage::disk('public')->exists($user->img)) {
+            Storage::disk('public')->delete($user->img);
+        }
+        // store new image
+        $user->img = $request->file('img')->store('users', 'public');
+
+    } elseif ($request->boolean('remove_image')) {
+        // user wants to remove the image
+        if ($user->img && Storage::disk('public')->exists($user->img)) {
+            Storage::disk('public')->delete($user->img);
+        }
+        $user->img = null;
+    }
+
+    //Update user data
+    $user->first_name = $request->username;
+    $user->last_name  = $request->name;
+    $user->email      = $request->email;
+    $user->save();
+
+    //Return image (default if null)
+    $imageUrl = $user->img
+        ? asset('storage/' . $user->img)
+        : asset('images/default-user.png');
+
+    return $this->ApiResponse([
+        "username"  => $user->first_name,
+        "name"      => $user->last_name,
+        "userEmail" => $user->email,
+        "image"     => $imageUrl
+    ], "User data updated successfully!", 200);
+}
+
 
     //change the account language
     public function changeLang(Request $request){

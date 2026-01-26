@@ -15,6 +15,9 @@ class Category extends Model
         return $this->hasMany(Lesson::class);
     }
 
+    public function quiz(){
+        return $this->hasOne(Quiz::class);
+    }
     public function scopeFilter($query,$name){
         if ($name){
             if ($name) {

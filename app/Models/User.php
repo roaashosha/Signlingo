@@ -31,6 +31,7 @@ class User extends Authenticatable implements JWTSubject
         'first_name',
         'email',
         'password',
+        'img'
     ];
 
     /**
@@ -59,5 +60,13 @@ class User extends Authenticatable implements JWTSubject
                     ->withPivot('completed', 'completed_at')
                     ->withTimestamps();
     }
+
+    public function quizes(){
+        return $this->belongsToMany(Quiz::class, 'quiz_user')
+        ->withPivot(['score', 'status', 'time_mins'])
+        ->withTimestamps();
+    }
+
+
 
 }
