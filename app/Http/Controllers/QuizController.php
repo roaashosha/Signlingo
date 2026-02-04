@@ -9,6 +9,8 @@ use App\Models\QuizUser;
 use App\Http\Resources\QuizResource;
 use App\Http\Resources\QuizUserResource;
 use App\Models\QuizQuestion;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class QuizController extends Controller
 {
@@ -27,7 +29,7 @@ class QuizController extends Controller
         
         $questions = QuizQuestion::where('quiz_id',$id)->get();
         if ($questions->isEmpty()){
-             return $this->ApiResponse(null,"There are no questions!",404);
+             return $this->ApiResponse(null,"Quiz not found!",404);
         }
         return $this->ApiResponse(QuestionResource::collection($questions),"Questions returned succesfully!",200);
     }
@@ -69,6 +71,7 @@ class QuizController extends Controller
         $answers = $request->input('answers');
         $userQuizId = $request->input('user_quiz_id');
 
+
         // Check if answers array exists
         if (!$answers || count($answers) === 0) {
             return $this->ApiResponse(null, "All answers should be filled!", 400);
@@ -90,6 +93,9 @@ class QuizController extends Controller
         if ($userQuiz->status) {
             return $this->ApiResponse(null, "This attempt is already done!", 400);
         }
+
+        //store answers in cache
+        Cache::put("quiz_answers_user_{$userQuizId}",$answers,now()->addMinutes(30));
 
         // Calculate time taken in seconds
         $timeTakenSeconds = now()->diffInSeconds($userQuiz->created_at);
@@ -118,11 +124,14 @@ class QuizController extends Controller
         // Convert time taken to minutes with 2 decimals
         $timeTakenMins = round($timeTakenSeconds / 60, 2);
 
+        $shareToken = Str::random(32);
+
         // Update user's quiz attempt
         $userQuiz->update([
             "status" => true,
             "score" => $score,
-            "time_mins" => $timeTakenMins
+            "time_mins" => $timeTakenMins,
+            "share_token"=>$shareToken
         ]);
 
         // Return response
@@ -132,19 +141,23 @@ class QuizController extends Controller
             'percentage' => $percentage,
             'feedback' => $feedback,
             'time_mins' => $timeTakenMins,
-            'time_up' => $isTimeUp
+            'time_up' => $isTimeUp,
+            "share_token"=>$shareToken
         ], "The quiz is submitted successfully!", 200);
     }
 
-    public function reviewAnswers($quizId)
+    public function reviewAnswers($quizId, $userQuizId)
     {
-        $questions = QuizQuestion::where('quiz_id', $quizId)->get();
-
-        if ($questions->isEmpty()) {
-            return $this->ApiResponse(null, "Quiz not found", 404);
+        $quiz = Quiz::with('questions')->find($quizId);
+        if (!$quiz) {
+            return $this->ApiResponse(null, "Quiz not found!", 404);
         }
 
-        $data = $questions->map(function ($q) {
+        // Get cached answers
+        $userAnswers = Cache::get("quiz_answers_user_{$userQuizId}", []);
+
+        $data = $quiz->questions->map(function ($q) use ($userAnswers) {
+
             $options = [
                 1 => $q->option_1,
                 2 => $q->option_2,
@@ -152,24 +165,74 @@ class QuizController extends Controller
                 4 => $q->option_4,
             ];
 
+            $userAnswer = $userAnswers[$q->id] ?? null;
+
             return [
                 "question_id" => $q->id,
                 "title" => $q->title,
-                "media" => $q->media,
                 "options" => $options,
-                "correct_option" => $q->answer,
-                "correct_text" => $options[$q->answer],
+
+                // user info
+                "user_answer" => $userAnswer,
+                // "user_answer_text" => $userAnswer ? $options[$userAnswer] : null,
+
+                // correct info
+                "correct_answer" => $q->answer,
+                // "correct_answer_text" => $options[$q->answer],
+
+                "is_correct" => $userAnswer == $q->answer
             ];
         });
 
         return $this->ApiResponse(
             $data,
-            "Questions and answers returned successfully!",
+            "Review answers returned successfully!",
             200
         );
+    }  
+
+    public function sharedResult($token)
+    {
+        $userQuiz = QuizUser::with('quiz')
+            ->where('share_token', $token)
+            ->first();
+
+        if (!$userQuiz) {
+            return $this->ApiResponse(null, "Invalid or expired link", 404);
+        }
+
+        return $this->ApiResponse([
+            "quiz_title" => $userQuiz->quiz->category->name,
+            "score" => $userQuiz->score,
+            "percentage" => round(
+                ($userQuiz->score / $userQuiz->quiz->questions()->count()) * 100,
+                2
+            ),
+            "time_mins" => $userQuiz->time_mins,
+            "submitted_at" => $userQuiz->updated_at->toDateTimeString(),
+        ], "Shared quiz result", 200);
     }
 
 
+    public function generateShareLink($userQuizId){
+        $userQuiz = QuizUser::where('id', $userQuizId)
+        ->where('user_id', auth()->id())
+        ->first();
 
-    
+        if (!$userQuiz) {
+            return $this->ApiResponse(null, "Attempt not found", 404);
+        }
+
+        if (!$userQuiz->share_token) {
+            $userQuiz->share_token = Str::random(32);
+            $userQuiz->save();
+        }
+
+        $link = url("/shared-result/{$userQuiz->share_token}");
+
+        return $this->ApiResponse([
+            'share_link' => $link
+        ], "Share link generated", 200);
+    }
+
 }

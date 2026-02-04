@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('first_name');
-            $table->string('last_name');
+            $table->string('last_name')->nullable();
             $table->enum('gender',['male','female'])->nullable();
             $table->enum('lang',['ar','en']);
             $table->string('email');
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->boolean('is_verified')->default(0);
-            $table->boolean('agreement')->default0(0);
+            $table->boolean('agreement')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });

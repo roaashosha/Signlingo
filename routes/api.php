@@ -22,6 +22,7 @@ Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
 Route::post('/logout',[AuthController::class,'logout']);
 Route::post('/verify-otp',[AuthController::class,'verifyOtp']);
+Route::get('/share/quiz-result/{token}',[QuizController::class,'sharedResult']);
 
 Route::middleware(['auth:api','setLang'])->group(function () {
     Route::post('/user/select-mode', [UserController::class,'selectMode']);
@@ -44,7 +45,12 @@ Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:l'
     Route::get('quizes/{id}',[QuizController::class,'quizQuestions']);
     Route::post('/quizes/{quiz}/start', [QuizController::class, 'startQuiz']);
     Route::post('/quizes/{quiz}/submit', [QuizController::class, 'submitAnswer']);
-    Route::get('/quizes/{quiz}/review', [QuizController::class, 'ReviewAnswers']);
+    Route::get('/quizes/{quiz}/review/{userQuizId}', [QuizController::class, 'ReviewAnswers']);
+    Route::get('/share/generate-link/{userQuizId}',[QuizController::class,'generateShareLink']);
+});
+
+Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:a']], function () {
+    
 });
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();

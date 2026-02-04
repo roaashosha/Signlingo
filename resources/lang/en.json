@@ -1,11 +1,159 @@
 {
+    "screen1":"onboarding introduction",
+    "screen1.title":"Learn and Communicate with Sign Language",
+    "screen1.desc":"Learn sign language , translate instantly and connect with confidence.",
+
+    "screen2":"onbroading learning",
+    "screen2.title":"Learn Sign Language Visually",
+    "screen2.desc":"Interactive lessons , videos , and quizzes designed for everyone.",
+
+    "screen3":"onboarding translation",
+    "screen3.title":"Instant Translation",
+    "screen3.desc":"Translate sign langauge and speech to text in realtime.",
+
+    "screen4":"onboarding games",
+    "screen4.title":"Learn Through Play",
+    "screen4.desc":"Games that help you practise signs and improve faster.",
+
+    "onboarding.btn":"Next",
+    "skip.btn":"Skip",
+    
+    "screen5":"onboarding mode",
+    "screen5.title":"How would you like to use the app?",
+    "screen5.desc1":"Choose a mode to get the best experience.You can change this later in settings.",
+    "mode1":"Learning Mode",
+    "mode1.desc":"Learn sign language through lessons, games, and quizzes.",
+    "mode2":"Assistive Mode",
+    "mode2.desc":"Translate sign language and speech instantly",
+    "screen5.desc2":"Not sure?You cann switch modes anytime.Both Modes include full accessibility support.",
+
+    "screen6":"welcome1",
+    "screen6.title":"Welcome to ASSISTIVE MODE",
+    "screen6.desc":"This mode helps you commuincate instanlty using real-time translation.",
+    
+    "screen7":"welcome2",
+    "screen7.title":"Welcome to Learning Mode",
+    "screen7.desc":"This mode helps you learn sign language step by step through interactive content",
+
+    "welcome.btn":"Get Started",
+    "welcome.desc":"Already have an account?Log in",
+
+    "screen8":"Sign up",
     "register.title":"Get Started",
-    "name":"Name",
+    "username":"username",
     "email":"Email",
     "password":"Password",
     "password.confirmation":"Password Confirmation",
+    "register.alternative":"Or sign up with",
+    "register.already":"Already have an account?Log in",
     "agreement":"I agree to the processing of personal data",
-    "register.btn":"Sign Up"
+    "register.btn":"Sign Up",
+
+    "screen9":"login",
+    "login.title":"Welcome Back!",
+    "remember":"Remember me",
+    "forget.hyper":"Forgot Password?",
+    "login.btn":"Log In",
+    "login.alternative":"Or log in with",
+
+    "enter.username":"Enter your username",
+    "enter.email":"Enter you email",
+    "enter.pass":"Enter your password",
+    "enter.pass.conf":"Enter your password",
+
+    "screen10":"otp code",
+    "otp.title":"Enter your OTP",
+    "otp.desc":"For you security, We have sent a One-Time code to your e-mail user@gmail.com.Enter it to access your account.",
+    "otp.resent":"Resend code?",
+    "otp.btn":"Verify",
+    "otp.sec":"Remaining",
+
+    "screen11":"home for learning",
+    "home1.welcome":"Welcome Back!",
+    "home1.message":"Continue yout lessons!",
+    "home1.submessage":"Because everyone deserves to be understood",
+    "home1.services":"Our Services",
+    "home1.service1":"Learn Sign Language",
+    "home1.service1.desc":"Start from the basics and build your signing skills step by step.",
+    "home1.service2":"Dictionary",
+    "home1.service2.desc":"Find any sign instantly , exactly when you need it.",
+    "home1.service3":"Quick Practice",
+    "home1.service3.desc":"Consistent practice , meaningful results.",
+    "home1.service4":"Game To Learn",
+    "home1.service4.desc":"Interactive games to learn sign language.",
+
+    "screen12":"Category",
+    "categories.title":"Categories",
+    "categories.search":"Search",
+
+    "screen13":"lessons",
+    "lessons.vocab":"Vocabulary",
+    "lessons.num":"Lessons",
+    "lessons.all":"All Lessons",
+    "lessons.viewed":"Viewed",
+
+    "screen14":"quiz",
+    "quiz.title":"Check your understanding",
+    "quiz.desc":"Choose a category to begin!",
+    "quiz.btn":"Start now!",
+
+    "screen15":"question",
+    "question.num":"Question",
+    
+    "screen16":"quizSubmit",
+    "submit.title":"Quiz Completed!",
+    "submit.desc":"You've reached the end of the quiz",
+    "submit.btn1":"Submit",
+    "submit.btn2":"Cancel",
+
+    "screen17":"results",
+    "result.score1":"Score",
+    "result.score2":"Out Of",
+    "result.time":"Time",
+    "result.sec":"Seconds",
+    "result.play":"Play Again",
+    "result.review":"Review Answers",
+    "result.share":"Share Score",
+    "result.home":"Return Home",
+
+    "screen18":"Profile information",
+    "profile.username":"Username",
+    "profile.name":"Name",
+    "profile.email":"Email",
+    "profile.current.pass":"Current Password",
+    "profile.new.pass":"New Password",
+    "profile.confirm.pass":"Confirm Password",
+    "profile.btn1":"Save Changes",
+    "profile.btn2":"Cancel",
+
+    "screen19":"profile",
+    "account.title":"Account",
+    "account.info":"Profile information",
+    "account.lang":"Language",
+    "lang.ar":"ar",
+    "lang.en":"en",
+    "account.mode":"App mode",
+    "mode.ass":"Assistive Mode",
+    "mode.learn":"Learning Mode",
+    "about.title":"About",
+    "about.about":"About us",
+    "about.terms":"Terms & Conditions",
+    "about.privacy":"Privacy Policy",
+    "about.version":"App version",
+    "support.title":"Support",
+    "support.contact":"Contact Us",
+    "support.help":"Help Center",
+    "logout":"Log out",
+    "account.delete":"Delete Account",
+    "delete.title":"Confirm Account Deletion",
+    "delete.desc":"Are you sure you want to delete your account?This action is permanent and cannot be undone.",
+    "delete.btn1":"Delete Account",
+    "delete.btn2":"Cancel"
+
+    
+
+
+
 
     
 

@@ -16,6 +16,7 @@ class QuizUser extends Model
     'time_mins',
     'status',
     'start_time',
+    'share_token'
 ];
 
 public function quiz(){
