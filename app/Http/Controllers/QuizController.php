@@ -71,6 +71,14 @@ class QuizController extends Controller
         $answers = $request->input('answers');
         $userQuizId = $request->input('user_quiz_id');
 
+        // Get user's quiz attempt
+        $userQuiz = $userQuiz = QuizUser::where('id', $userQuizId)
+                    ->where('user_id', $user->id)
+                    ->where('quiz_id', $quizId)
+                    ->first();
+        if (!$userQuiz) {
+            return $this->ApiResponse(null, "This attempt not found!", 404);
+        }
 
         // Check if answers array exists
         if (!$answers || count($answers) === 0) {
@@ -83,11 +91,14 @@ class QuizController extends Controller
             return $this->ApiResponse(null, "Quiz not found!", 404);
         }
 
-        // Get user's quiz attempt
-        $userQuiz = QuizUser::find($userQuizId);
-        if (!$userQuiz) {
-            return $this->ApiResponse(null, "This attempt not found!", 404);
-        }
+        // // Get user's quiz attempt
+        // $userQuiz = $userQuiz = QuizUser::where('id', $userQuizId)
+        //             ->where('user_id', $user->id)
+        //             ->where('quiz_id', $quizId)
+        //             ->first();
+        // if (!$userQuiz) {
+        //     return $this->ApiResponse(null, "This attempt not found!", 404);
+        // }
 
         // Check if quiz already submitted
         if ($userQuiz->status) {
@@ -104,14 +115,14 @@ class QuizController extends Controller
 
         // Calculate score
         $score = 0;
-        foreach ($quiz->questions as $question) {
-            // Before time is up, all answers must be filled
-            if (!$isTimeUp && (!isset($answers[$question->id]) || empty($answers[$question->id]))) {
+        $questions = $quiz->questions->values(); // reindex from 0
+        foreach ($questions as $index => $question) {
+            $key = $index + 1; // matches front-end keys 1, 2, 3...
+            if (!$isTimeUp && (!isset($answers[$key]) || empty($answers[$key]))) {
                 return $this->ApiResponse(null, "All questions must be answered!", 400);
             }
 
-            // Count correct answers if provided
-            if (isset($answers[$question->id]) && $answers[$question->id] == $question->answer) {
+            if (isset($answers[$key]) && $answers[$key] == $question->answer) {
                 $score++;
             }
         }
@@ -122,7 +133,7 @@ class QuizController extends Controller
         $feedback = $this->getFeedback($percentage);
 
         // Convert time taken to minutes with 2 decimals
-        $timeTakenMins = round($timeTakenSeconds / 60, 2);
+        // $timeTakenMins = round($timeTakenSeconds / 60, 2);
 
         $shareToken = Str::random(32);
 
@@ -130,7 +141,7 @@ class QuizController extends Controller
         $userQuiz->update([
             "status" => true,
             "score" => $score,
-            "time_mins" => $timeTakenMins,
+            "time_secs" => $timeTakenSeconds,
             "share_token"=>$shareToken
         ]);
 
@@ -140,7 +151,7 @@ class QuizController extends Controller
             'total_questions' => $totalQuestions,
             'percentage' => $percentage,
             'feedback' => $feedback,
-            'time_mins' => $timeTakenMins,
+            'time_secs' => $timeTakenSeconds,
             'time_up' => $isTimeUp,
             "share_token"=>$shareToken
         ], "The quiz is submitted successfully!", 200);

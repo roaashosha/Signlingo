@@ -16,7 +16,7 @@ class QuestionResource extends JsonResource
     {
         return [
             "title"=>$this->title,
-            "media"=>$this->media,
+            "media"=>asset($this->media),
             "option1"=>$this->option_1,
             "option2"=>$this->option_2,
             "option3"=>$this->option_3,

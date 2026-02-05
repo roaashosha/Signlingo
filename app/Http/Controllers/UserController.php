@@ -17,9 +17,6 @@ class UserController extends Controller
     public function selectMode(Request $request){
         //check logged user 
         $user = auth()->user();
-        if (!$user){
-            return $this->ApiResponse(null,"Unauthenticated user!",401);
-        }
         //validate if the choosen mode exists
         $request->validate([
             "mode"=>"required|in:l,a"
@@ -56,7 +53,7 @@ class UserController extends Controller
 
     //update user data
     public function editUser(Request $request)
-{
+    {
     //Check logged user
     $user = auth()->user();
     if (!$user) {
@@ -121,6 +118,7 @@ class UserController extends Controller
     $user->last_name  = $request->name;
     $user->email      = $request->email;
     $user->save();
+    $user->refresh();
 
     //Return image (default if null)
     $imageUrl = $user->img
@@ -140,13 +138,18 @@ class UserController extends Controller
     public function changeLang(Request $request){
         //check if user logged
         $user = auth()->user();
-        if (!$user){
-            return $this->ApiResponse(null,"Unauthenticated user!",401);
-        }
         //validate the choosen language
         $request->validate([
             "lang"=>"required|in:ar,en"
         ]);
+
+        if ($user->lang === $request->lang) {
+        return $this->ApiResponse(
+            ['Language' => $user->lang],
+            'Language already selected',
+            200
+        );
+        }
         //change in the database and save
         $user->lang = $request->lang;
         $user->save();
@@ -175,7 +178,29 @@ class UserController extends Controller
             return $this->ApiResponse(null,"Unauthenticated user!",401);
         }
         //return the name
-        return $this->ApiResponse($user->last_name,"User's name returned successfully!",200);
+        return $this->ApiResponse($user->first_name,"User's name returned successfully!",200);
+    }
+
+    public function changeMode(Request $request)
+    {
+        //check logged user 
+        $user = auth()->user();
+        //validate if the choosen mode exists
+        $request->validate([
+            "mode"=>"required|in:l,a"
+        ]);
+        //if the mode is already chosen
+        if ($user->mode === $request->mode) {
+        return $this->ApiResponse(
+            ['mode' => $user->mode],
+            'Mode already selected',
+            200
+        );
+        }
+        //change the mode and save it
+        $user->mode = $request->mode;
+        $user->save();
+        return $this->ApiResponse(["mode"=>$user->mode],"Mode updated Successfully!",200);
     }
     
     

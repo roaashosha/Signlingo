@@ -25,11 +25,12 @@ Route::post('/verify-otp',[AuthController::class,'verifyOtp']);
 Route::get('/share/quiz-result/{token}',[QuizController::class,'sharedResult']);
 
 Route::middleware(['auth:api','setLang'])->group(function () {
-    Route::post('/user/select-mode', [UserController::class,'selectMode']);
+    Route::patch('/user/select-mode', [UserController::class,'selectMode']);
+    Route::patch('/user/change-mode', [UserController::class,'changeMode']);
     Route::get('user/main-data',[UserController::class,'userMainData']);
     Route::get('user/all-data',[UserController::class,'userAllData']);
     Route::post('user/update-data',[UserController::class,'editUser']);
-    Route::post('/user/change-lang', [UserController::class,'changeLang']);
+    Route::patch('/user/change-lang', [UserController::class,'changeLang']);
     Route::delete('/user/delete-account',[UserController::class,'deleteUser']);
     Route::get('user/get-name',[UserController::class,'getUserName']);
 
