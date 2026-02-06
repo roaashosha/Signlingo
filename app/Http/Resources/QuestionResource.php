@@ -15,6 +15,7 @@ class QuestionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            "id"=>$this->id,
             "title"=>$this->title,
             "media"=>asset($this->media),
             "option1"=>$this->option_1,

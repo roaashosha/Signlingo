@@ -105,8 +105,19 @@ class QuizController extends Controller
             return $this->ApiResponse(null, "This attempt is already done!", 400);
         }
 
+        $answersByQuestionId = [];
+
+        foreach ($quiz->questions as $index => $question) {
+            $key = $index + 1; // frontend index
+            if (isset($answers[$key])) {
+                $answersByQuestionId[$question->id] = $answers[$key];
+            }
+        }
+
         //store answers in cache
-        Cache::put("quiz_answers_user_{$userQuizId}",$answers,now()->addMinutes(30));
+        // Cache::put("quiz_answers_user_{$userQuizId}",$answers,now()->addMinutes(30));
+        Cache::put("quiz_answers_user_{$userQuizId}",$answersByQuestionId,now()->addMinutes(30));
+
 
         // Calculate time taken in seconds
         $timeTakenSeconds = now()->diffInSeconds($userQuiz->created_at);
@@ -133,7 +144,7 @@ class QuizController extends Controller
         $feedback = $this->getFeedback($percentage);
 
         // Convert time taken to minutes with 2 decimals
-        // $timeTakenMins = round($timeTakenSeconds / 60, 2);
+        $timeTakenMins = round($timeTakenSeconds / 60, 2);
 
         $shareToken = Str::random(32);
 
@@ -141,7 +152,7 @@ class QuizController extends Controller
         $userQuiz->update([
             "status" => true,
             "score" => $score,
-            "time_secs" => $timeTakenSeconds,
+            "time_mins" => $timeTakenMins,
             "share_token"=>$shareToken
         ]);
 
@@ -151,7 +162,7 @@ class QuizController extends Controller
             'total_questions' => $totalQuestions,
             'percentage' => $percentage,
             'feedback' => $feedback,
-            'time_secs' => $timeTakenSeconds,
+            "time_mins" => $timeTakenMins,
             'time_up' => $isTimeUp,
             "share_token"=>$shareToken
         ], "The quiz is submitted successfully!", 200);
@@ -166,8 +177,9 @@ class QuizController extends Controller
 
         // Get cached answers
         $userAnswers = Cache::get("quiz_answers_user_{$userQuizId}", []);
+        
 
-        $data = $quiz->questions->map(function ($q) use ($userAnswers) {
+        $data = $quiz->questions->map(function ($q) use ($userAnswers,$quiz) {
 
             $options = [
                 1 => $q->option_1,
@@ -176,7 +188,8 @@ class QuizController extends Controller
                 4 => $q->option_4,
             ];
 
-            $userAnswer = $userAnswers[$q->id] ?? null;
+            $userAnswer =  $userAnswers[$q->id]  ?? null;
+
 
             return [
                 "question_id" => $q->id,
