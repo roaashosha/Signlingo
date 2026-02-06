@@ -250,7 +250,7 @@ class AuthController extends Controller
     public function resetPassword(Request $request){
         $request->validate([
             "reset_token"=>"required|string",
-            "password"=>"required|string|min:6|confirmed"
+            "password"=>"required|string|min:8|confirmed"
         ]);
 
         $hashedToken = hash('sha256', $request->reset_token);
