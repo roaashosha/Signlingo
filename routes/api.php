@@ -22,6 +22,10 @@ Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
 Route::post('/logout',[AuthController::class,'logout']);
 Route::post('/verify-otp',[AuthController::class,'verifyOtp']);
+Route::post('/resend-otp',[AuthController::class,'resendOtp']);
+Route::post('/forget-otp',[AuthController::class,'sendForgetOtp']);
+Route::post('/verify-forget-otp',[AuthController::class,'verifyForgetOtp']);
+Route::post('/reset-password',[AuthController::class,'resetPassword']);
 Route::get('/share/quiz-result/{token}',[QuizController::class,'sharedResult']);
 
 Route::middleware(['auth:api','setLang'])->group(function () {
@@ -39,7 +43,7 @@ Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:l'
     Route::get('/categories',[CategoryController::class,'showCategories']);
     // Route::get('/category-progress',[CategoryController::class,'progressPerCategory']);
     Route::get('/categories/{id}/lesson',[CategoryController::class,'lessonsByCategory']);
-    Route::get('/lessons-progress',[CategoryController::class,'lessonsProgressPerCategory']);
+    Route::get('/lessons-progress/{id}',[CategoryController::class,'lessonsProgressPerCategory']);
     Route::get('/categories/{id}/viewed-lessons',[CategoryController::class,'viewedLessons']);
     Route::get('/lessons/{id}/toggle',[ProgressController::class,'toggleLessonCompletion']);
     Route::get('/quizes',[QuizController::class,'showQuizes']);

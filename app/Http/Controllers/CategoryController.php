@@ -112,33 +112,34 @@ class CategoryController extends Controller
     // }
 
 
-    public function lessonsProgressPerCategory()
+    public function lessonsProgressPerCategory($categoryId)
     {
-        $user = auth()->user();
+       $user = auth()->user();
+        // Get the specific category with lessons
+        $category = Category::with('lessons')->find($categoryId);
 
-        $categories = Category::with('lessons')->get();
+        if (!$category) {
+            return $this->ApiResponse(null, "Category not found!", 404);
+        }
 
-        $data = $categories->map(function ($category) use ($user) {
+        $totalLessons = $category->lessons->count();
 
-            $totalLessons = $category->lessons->count();
+        $completedLessons = $category->lessons()
+            ->whereHas('users', function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                ->where('progress.done', 1);
+            })
+            ->count();
 
-            $completedLessons = $category->lessons()
-                ->whereHas('users', function ($q) use ($user) {
-                    $q->where('user_id', $user->id)
-                    ->where('progress.done', 1);
-                })
-                ->count();
-
-            return [
-                'category_id' => $category->id,
-                'progress' => "{$completedLessons} / {$totalLessons}",
-                'user_id'=>$user->id
-            ];
-        });
+        $data = [
+            'category_id' => $category->id,
+            'progress' => "{$completedLessons} / {$totalLessons}",
+            'user_id' => $user->id
+        ];
 
         return $this->ApiResponse(
             $data,
-            "Lessons progress per category returned successfully",
+            "Lessons progress for category returned successfully",
             200
         );
     }

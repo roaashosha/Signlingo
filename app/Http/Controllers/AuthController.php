@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendOtpMail;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -79,7 +80,7 @@ class AuthController extends Controller
         OtpCode::create([
             "code"=>$otpCode,
             "user_id"=>$user->id,
-            'expires_at' => Carbon::now()->addMinutes(5) //expires at 5 mins
+            'expires_at' => Carbon::now()->addMinutes(1) //expires at 5 mins
         ]);
 
         //send otp by email
@@ -159,6 +160,112 @@ class AuthController extends Controller
     public function logout(){
         auth('api')->logout();
         return $this->ApiResponse(null,"User logout successfully!",200);
+    }
+
+    public function resendOtp(Request $request){
+        $request->validate([
+            "user_id"=>"required|exists:users,id"
+        ]);
+        $user = User::where('id',$request->user_id)->first();
+        $otpCode = OtpCode::where('user_id',$user->id)->first();
+        if ($otpCode){
+            if (Carbon::now()->greaterThanOrEqualTo($otpCode->expires_at)){
+                $otpCode->delete();
+                $otpCode = $this->generateOtp();
+                OtpCode::create([
+                    "code"=>$otpCode,
+                    "user_id"=>$user->id,
+                    "expires_at"=>Carbon::now()->addMinutes(1)
+                ]);
+                Mail::to($user->email)->send(new SendOtpMail($otpCode));
+                return $this->ApiResponse(null,"A new otp is sent successfully!",200);
+            }
+            return $this->ApiResponse(null,"The otp was sent already",200);
+        }
+    
+
+    }
+    
+    public function sendForgetOtp(Request $request){
+        $request->validate([
+            "email"=>"required|email",
+        ]);
+        $user = User::where('email',$request->email)->first();
+
+        if (! $user){
+            return $this->ApiResponse(null,"this user doesnt exist",404);
+        }
+        $otpCode = OtpCode::where('user_id',$user->id)->first();
+        if (! $otpCode || Carbon::now()->greaterThanOrEqualTo($otpCode->expires_at) ){
+            if ($otpCode) {
+                $otpCode->delete();
+            }
+            $otpCode = $this->generateOtp();
+            OtpCode::create([
+                "code"=>$otpCode,
+                "user_id"=>$user->id,
+                "expires_at"=>Carbon::now()->addMinutes(1)
+            ]);
+            Mail::to($user->email)->send(new SendOtpMail($otpCode));
+            return $this->ApiResponse(null,"A new otp is sent successfully!",200);
+        }
+        else{
+            return $this->ApiResponse(null,"The otp was sent already",200);
+
+        }
+        
+        
+    }
+
+    public function verifyForgetOtp(Request $request){
+        $request->validate([
+            "email"=>"required|email",
+            "otp_code"=>"required|digits:4"
+        ]);
+
+        $user = User::where('email',$request->email)->first();
+        if (!$user){
+            return $this->ApiResponse(null,"User not found",404);
+        }
+        $otpCode = OtpCode::where('user_id',$user->id)->where('code',$request->otp_code)->where('expires_at','>',now())->first();
+        if (!$otpCode){
+            return $this->ApiResponse(null,"Invalid or expired OTP",401);
+        }
+        
+        $plainToken = Str::random(64);
+
+        $user->update([
+        "reset_token" => hash('sha256', $plainToken),
+        "reset_token_expires_at" => Carbon::now()->addMinutes(5)
+    ]);
+
+        $otpCode->delete();
+        return $this->ApiResponse([
+        "reset_token" => $plainToken], "OTP verified", 200);
+
+
+    }
+
+
+    public function resetPassword(Request $request){
+        $request->validate([
+            "reset_token"=>"required|string",
+            "password"=>"required|string|min:6|confirmed"
+        ]);
+
+        $hashedToken = hash('sha256', $request->reset_token);
+
+        $user = User::where('reset_token',$hashedToken)->where('reset_token_expires_at','>',Carbon::now())->first();
+        if (!$user){
+            return $this->ApiResponse(null, "Invalid or expired token", 400);
+        }
+
+        $user->update([
+            "password"=>bcrypt($request->password),
+            'reset_token' => null,
+            'reset_token_expires_at' => null,
+        ]);
+        return $this->ApiResponse(null, "Password reset successfully", 200);
     }
 
 

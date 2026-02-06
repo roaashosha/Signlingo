@@ -74,7 +74,7 @@ class QuizController extends Controller
         // Get user's quiz attempt
         $userQuiz = $userQuiz = QuizUser::where('id', $userQuizId)
                     ->where('user_id', $user->id)
-                    ->where('quiz_id', $quizId)
+                    ->where('quiz_id', $quizId)->latest('created_at')
                     ->first();
         if (!$userQuiz) {
             return $this->ApiResponse(null, "This attempt not found!", 404);
@@ -158,6 +158,7 @@ class QuizController extends Controller
 
         // Return response
         return $this->ApiResponse([
+            "attemp"=>$userQuiz,
             'score' => $score,
             'total_questions' => $totalQuestions,
             'percentage' => $percentage,

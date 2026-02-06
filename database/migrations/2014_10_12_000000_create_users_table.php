@@ -29,6 +29,14 @@ return new class extends Migration
             $table->string('password');
             $table->boolean('is_verified')->default(0);
             $table->boolean('agreement')->default(0);
+            $table->string('reset_token', 64)
+                  ->nullable()
+                  ->unique()
+                  ->after('password');
+
+            $table->timestamp('reset_token_expires_at')
+                  ->nullable()
+                  ->after('reset_token');
             $table->rememberToken();
             $table->timestamps();
         });
