@@ -26,7 +26,8 @@ Route::post('/resend-otp',[AuthController::class,'resendOtp']);
 Route::post('/forget-otp',[AuthController::class,'sendForgetOtp']);
 Route::post('/verify-forget-otp',[AuthController::class,'verifyForgetOtp']);
 Route::post('/reset-password',[AuthController::class,'resetPassword']);
-Route::get('/share/quiz-result/{token}',[QuizController::class,'sharedResult']);
+
+
 
 Route::middleware(['auth:api','setLang'])->group(function () {
     Route::patch('/user/select-mode', [UserController::class,'selectMode']);

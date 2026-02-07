@@ -2,7 +2,7 @@
 
 // use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\QuizController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,3 +15,4 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Route::get('/signup',[AuthController::class]);
+Route::get('/share/quiz-result/{token}',[QuizController::class,'sharedResult']);

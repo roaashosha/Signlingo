@@ -225,17 +225,19 @@ class QuizController extends Controller
         if (!$userQuiz) {
             return $this->ApiResponse(null, "Invalid or expired link", 404);
         }
+        $locale = app()->getLocale();
 
-        return $this->ApiResponse([
-            "quiz_title" => $userQuiz->quiz->category->name,
-            "score" => $userQuiz->score,
-            "percentage" => round(
-                ($userQuiz->score / $userQuiz->quiz->questions()->count()) * 100,
-                2
-            ),
-            "time_mins" => $userQuiz->time_mins,
-            "submitted_at" => $userQuiz->updated_at->toDateTimeString(),
-        ], "Shared quiz result", 200);
+        return view('shared.result', [
+        'quiz_title' => json_decode($userQuiz->quiz->category->name, true)[$locale] ?? 'Quiz',
+        'score' => $userQuiz->score,
+        'total' => $userQuiz->quiz->questions->count(),
+        'percentage' => round(
+            ($userQuiz->score / $userQuiz->quiz->questions->count()) * 100,
+            2
+        ),
+        'time_mins' => $userQuiz->time_mins,
+        'submitted_at' => $userQuiz->updated_at->toDateTimeString(),
+        ]);
     }
 
 
@@ -253,7 +255,7 @@ class QuizController extends Controller
             $userQuiz->save();
         }
 
-        $link = url("/shared-result/{$userQuiz->share_token}");
+        $link = url("/share/quiz-result/{$userQuiz->share_token}");
 
         return $this->ApiResponse([
             'share_link' => $link
