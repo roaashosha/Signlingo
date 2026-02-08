@@ -33,7 +33,8 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'img',
         "reset_token",
-        "reset_token_expires_at"
+        "reset_token_expires_at",
+        'google_id'
     ];
 
     /**

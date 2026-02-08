@@ -54,16 +54,36 @@ class QuizController extends Controller
     return $this->ApiResponse(new QuizUserResource($userQuiz),"Quiz started succesfully!",200);
     }
 
-    private function getFeedback($percentage){
-        if ($percentage >= 90) 
-            return 'Excellent! You have a strong understanding of the material. Keep up the great work and try to challenge yourself with advanced problems!';
-        if ($percentage >= 70) 
-            return 'Good job! You did well and have a solid grasp of the concepts. Review the areas where you lost points to reach the next level!';
-        if ($percentage >= 50) 
-            return 'You passed. You have basic understanding, but there’s room for improvement. Focus on the topics you struggled with and practice more.';
-        return 'Better luck next time. Don’t get discouraged! Review the lessons carefully, practice consistently, and you’ll improve significantly.';
+    private function getFeedback($percentage)
+    {
+        $locale = app()->getLocale(); // 'en' or 'ar'
 
+        $feedback = [
+            'en' => [
+                'excellent' => 'Excellent! You have a strong understanding of the material. Keep up the great work and try to challenge yourself with advanced problems!',
+                'good' => 'Good job! You did well and have a solid grasp of the concepts. Review the areas where you lost points to reach the next level!',
+                'pass' => 'You passed. You have basic understanding, but there’s room for improvement. Focus on the topics you struggled with and practice more.',
+                'fail' => 'Better luck next time. Don’t get discouraged! Review the lessons carefully, practice consistently, and you’ll improve significantly.'
+            ],
+            'ar' => [
+                'excellent' => 'ممتاز! لديك فهم قوي للمادة. استمر في العمل الجيد وحاول تحدي نفسك بمسائل متقدمة!',
+                'good' => 'عمل جيد! لقد أدّيت بشكل جيد ولديك فهم جيد للمفاهيم. راجع النقاط التي خسرتها للوصول إلى المستوى التالي!',
+                'pass' => 'لقد نجحت. لديك فهم أساسي، لكن هناك مجال للتحسين. ركز على المواضيع التي واجهت صعوبة فيها وتدرب أكثر.',
+                'fail' => 'حظًا أوفر في المرة القادمة. لا تشعر بالإحباط! راجع الدروس بعناية وتدرب باستمرار وستتحسن بشكل كبير.'
+            ]
+        ];
+
+        if ($percentage >= 90) {
+            return $feedback[$locale]['excellent'];
+        } elseif ($percentage >= 70) {
+            return $feedback[$locale]['good'];
+        } elseif ($percentage >= 50) {
+            return $feedback[$locale]['pass'];
+        } else {
+            return $feedback[$locale]['fail'];
+        }
     }
+
 
     public function submitAnswer(Request $request, $quizId)
     {
@@ -158,7 +178,7 @@ class QuizController extends Controller
 
         // Return response
         return $this->ApiResponse([
-            "attemp"=>$userQuiz,
+            "attemp"=>$userQuizId,
             'score' => $score,
             'total_questions' => $totalQuestions,
             'percentage' => $percentage,

@@ -7,6 +7,10 @@ use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\DictionaryController;
+use Illuminate\Support\Facades\App;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +30,9 @@ Route::post('/resend-otp',[AuthController::class,'resendOtp']);
 Route::post('/forget-otp',[AuthController::class,'sendForgetOtp']);
 Route::post('/verify-forget-otp',[AuthController::class,'verifyForgetOtp']);
 Route::post('/reset-password',[AuthController::class,'resetPassword']);
+Route::get('auth/google/redirect', [GoogleController::class, 'redirect']);
+Route::get('auth/google/callback', [GoogleController::class, 'callback']);
+Route::post('auth/google', [GoogleController::class, 'authWithGoogle']);
 
 
 
@@ -53,6 +60,7 @@ Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:l'
     Route::post('/quizes/{quiz}/submit', [QuizController::class, 'submitAnswer']);
     Route::get('/quizes/{quiz}/review/{userQuizId}', [QuizController::class, 'ReviewAnswers']);
     Route::get('/share/generate-link/{userQuizId}',[QuizController::class,'generateShareLink']);
+    Route::get('/dictionary',[DictionaryController::class,'getWords']);
 });
 
 Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:a']], function () {

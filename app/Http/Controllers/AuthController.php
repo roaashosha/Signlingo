@@ -80,7 +80,7 @@ class AuthController extends Controller
         OtpCode::create([
             "code"=>$otpCode,
             "user_id"=>$user->id,
-            'expires_at' => Carbon::now()->addMinutes(1) //expires at 5 mins
+            'expires_at' => Carbon::now()->addMinutes(5) //expires at 5 mins
         ]);
 
         //send otp by email
@@ -204,10 +204,10 @@ class AuthController extends Controller
             OtpCode::create([
                 "code"=>$otpCode,
                 "user_id"=>$user->id,
-                "expires_at"=>Carbon::now()->addMinutes(1)
+                "expires_at"=>Carbon::now()->addMinutes(5)
             ]);
             Mail::to($user->email)->send(new SendOtpMail($otpCode));
-            return $this->ApiResponse(null,"A new otp is sent successfully!",200);
+            return $this->ApiResponse(null,"Otp is sent successfully!",200);
         }
         else{
             return $this->ApiResponse(null,"The otp was sent already",200);
@@ -248,16 +248,24 @@ class AuthController extends Controller
 
 
     public function resetPassword(Request $request){
-        $request->validate([
-            "reset_token"=>"required|string",
-            "password"=>"required|string|min:8|confirmed"
-        ]);
+        $validator = Validator::make($request->all(), [
+        "reset_token" => "required|string",
+        "password" => "required|string|min:8|confirmed"
+    ]);
+
+        if ($validator->fails()) {
+            return $this->ApiResponse(null, $validator->errors(), 422);
+        }
 
         $hashedToken = hash('sha256', $request->reset_token);
 
         $user = User::where('reset_token',$hashedToken)->where('reset_token_expires_at','>',Carbon::now())->first();
         if (!$user){
             return $this->ApiResponse(null, "Invalid or expired token", 400);
+        }
+
+        if (Hash::check($request->password, $user->password)) {
+            return $this->ApiResponse(null, "New password cannot be the same as pervious passwords", 400);
         }
 
         $user->update([
