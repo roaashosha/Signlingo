@@ -9,6 +9,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DictionaryController;
+use App\Http\Controllers\SignController;
+
 use Illuminate\Support\Facades\App;
 
 
@@ -64,7 +66,8 @@ Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:l'
 });
 
 Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:a']], function () {
-    
+    Route::post('/sign/predict', [SignController::class, 'predict']);
+
 });
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();

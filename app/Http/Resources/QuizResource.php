@@ -17,7 +17,7 @@ class QuizResource extends JsonResource
         return [
             "name"=>$this->category->name,
             "desc"=>$this->category->desc,
-            "img"=>$this->category->img
+            "img"=>asset($this->category->img)
         ];
     }
 }
