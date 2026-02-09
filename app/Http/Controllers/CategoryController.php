@@ -30,7 +30,8 @@ class CategoryController extends Controller
         return [
             'id' => $category->id,
             'name' => $category->name,
-            'dessc' => $category->desc,
+            'desc' => $category->desc,
+            'img'=>asset($category->img),
             'progress' => $progress,
             "user_id"=>$user->id
         ];

@@ -25,6 +25,11 @@ class GoogleController extends Controller
         $response = $client->get("https://oauth2.googleapis.com/tokeninfo?id_token={$idToken}");
         $data = json_decode($response->getBody(), true);
 
+//         return response()->json([
+//     'aud_from_google' => $data['aud'] ?? null,
+//     'aud_expected' => $clientId,
+// ]);
+
         if (!isset($data['aud']) || $data['aud'] !== $clientId) {
             return response()->json(['message' => 'Invalid token'], 401);
         }
@@ -33,8 +38,18 @@ class GoogleController extends Controller
         $user = User::where('email', $data['email'])->first();
 
         if (!$user) {
+            $username = $data['name'];
+
+            // Ensure unique first_name
+            $originalFirstName = $username;
+            $counter = 1;
+            while (User::where('first_name', $username)->exists()) {
+                $username = $originalFirstName . $counter;
+                $counter++;
+            }
+
             $user = User::create([
-                'name' => $data['name'],
+                'first_name' => $username,
                 'email' => $data['email'],
                 'google_id' => $data['sub'],
                 'password' => bcrypt(Str::random(16)),

@@ -36,7 +36,7 @@ class UserController extends Controller
             return $this->ApiResponse(null,"Unauthenticated user!",401);
         }
         //return needed data 
-        return $this->ApiResponse(["userName"=>$user->first_name,"userEmail"=>$user->email,"userMode"=>$user->mode,"userLang"=>$user->lang],"User data returned Succesfully!",200);
+        return $this->ApiResponse(["userName"=>$user->first_name,"userEmail"=>$user->email,"userMode"=>$user->mode,"userLang"=>$user->lang,'img' => $user->img? asset('storage/' . $user->img): null,],"User data returned Succesfully!",200);
 
     }
 
@@ -48,7 +48,7 @@ class UserController extends Controller
             return $this->ApiResponse(null,"Unauthenticated user!",401);
         }
         //return needed data
-        return $this->ApiResponse(["username"=>$user->first_name,"name"=>$user->last_name,"userEmail"=>$user->email,"currentPassword"=>null,"newPassword"=>null,"confirmPassword"=>null],"User data returned Succesfully!",200);
+        return $this->ApiResponse(["username"=>$user->first_name,"name"=>$user->last_name,"userEmail"=>$user->email,"currentPassword"=>null,"newPassword"=>null,"confirmPassword"=>null,'img' => $user->img? asset('storage/' . $user->img): null,],"User data returned Succesfully!",200);
     }
 
     //update user data
