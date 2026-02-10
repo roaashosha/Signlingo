@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class QuickResponse extends Model
 {
     use HasFactory;
+    protected $fillable = ['sound','title','user_id'];
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }

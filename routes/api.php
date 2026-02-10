@@ -9,9 +9,10 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DictionaryController;
+use App\Http\Controllers\QuickResponseController;
 use App\Http\Controllers\SignController;
 
-use Illuminate\Support\Facades\App;
+// use Illuminate\Support\Facades\App;
 
 
 /*
@@ -26,7 +27,7 @@ use Illuminate\Support\Facades\App;
 */
 Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
-Route::post('/logout',[AuthController::class,'logout']);
+Route::middleware('auth:api')->post('/logout', [AuthController::class, 'logout']);
 Route::post('/verify-otp',[AuthController::class,'verifyOtp']);
 Route::post('/resend-otp',[AuthController::class,'resendOtp']);
 Route::post('/forget-otp',[AuthController::class,'sendForgetOtp']);
@@ -66,6 +67,9 @@ Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:l'
 });
 
 Route::group(['middleware' => ['auth:api','isUserLogged', 'setLang','userMode:a']], function () {
+    Route::get('/quick-responses',[QuickResponseController::class,'getResponses']);
+    Route::post('/quick-response/generate', [QuickResponseController::class, 'generateResponse']);
+    Route::delete('/quick-response/{id}', [QuickResponseController::class, 'deleteResponse']);
     Route::post('/sign/predict', [SignController::class, 'predict']);
 
 });

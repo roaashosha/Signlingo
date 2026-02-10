@@ -70,6 +70,10 @@ class User extends Authenticatable implements JWTSubject
         ->withTimestamps();
     }
 
+    public function quickResponses(){
+        return $this->hasMany(QuickResponse::class);
+    }
+
 
 
 }
