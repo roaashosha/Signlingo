@@ -42,6 +42,7 @@ Route::post('auth/google', [GoogleController::class, 'authWithGoogle']);
 Route::middleware(['auth:api','setLang'])->group(function () {
     Route::patch('/user/select-mode', [UserController::class,'selectMode']);
     Route::patch('/user/change-mode', [UserController::class,'changeMode']);
+    Route::patch('/user/change-theme', [UserController::class,'changeTheme']);
     Route::get('user/main-data',[UserController::class,'userMainData']);
     Route::get('user/all-data',[UserController::class,'userAllData']);
     Route::post('user/update-data',[UserController::class,'editUser']);

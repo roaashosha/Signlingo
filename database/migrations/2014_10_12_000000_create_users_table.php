@@ -37,6 +37,7 @@ return new class extends Migration
             $table->timestamp('reset_token_expires_at')
                   ->nullable()
                   ->after('reset_token');
+            $table->enum('theme', ['light', 'dark'])->default('light')->after('email');
             $table->rememberToken();
             $table->timestamps();
         });

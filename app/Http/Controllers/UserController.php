@@ -36,7 +36,7 @@ class UserController extends Controller
             return $this->ApiResponse(null,"Unauthenticated user!",401);
         }
         //return needed data 
-        return $this->ApiResponse(["userName"=>$user->first_name,"userEmail"=>$user->email,"userMode"=>$user->mode,"userLang"=>$user->lang,'img' => $user->img? asset('storage/' . $user->img): asset('images/default-user.png'),],"User data returned Succesfully!",200);
+        return $this->ApiResponse(["userName"=>$user->first_name,"userEmail"=>$user->email,"userMode"=>$user->mode,"userLang"=>$user->lang,"theme"=>$user->theme,'img' => $user->img? asset('storage/' . $user->img): asset('images/default-user.png'),],"User data returned Succesfully!",200);
 
     }
 
@@ -156,6 +156,28 @@ class UserController extends Controller
         //save it in the app data
         App::setLocale($user->lang);
         return $this->ApiResponse(["langauge"=>$user->lang],"lang updated Successfully!",200);
+    }
+
+    public function changetheme(Request $request){
+        //check if user logged
+        $user = auth()->user();
+        //validate the choosen language
+        $request->validate([
+            "theme"=>"required|in:light,dark"
+        ]);
+
+        if ($user->theme === $request->theme) {
+        return $this->ApiResponse(
+            ['theme' => $user->theme],
+            'theme already selected',
+            200
+        );
+        }
+        //change in the database and save
+        $user->theme= $request->theme;
+        $user->save();
+        //save it in the app data
+        return $this->ApiResponse(["theme"=>$user->theme],"lang updated Successfully!",200);
     }
 
     //delete user account
